@@ -1,4 +1,4 @@
-
+library(dplyr)
 test_that("non_numeric k throws error", {
   expect_error(my_rf_cv("5"))
 })

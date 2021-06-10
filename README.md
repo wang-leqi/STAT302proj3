@@ -5,7 +5,7 @@
 [![R-CMD-check](https://github.com/wang-leqi/STAT302proj3/workflows/R-CMD-check/badge.svg)](https://github.com/wang-leqi/STAT302proj3/actions)
 <!-- badges: end -->
 
-The goal of STAT302proj3 is to ...
+The goal of STAT302proj3 is to showcase four functions we've been working on for statistical inference and prediction. 
 
 ## Installation
 

@@ -15,7 +15,7 @@
 #' @export
 my_rf_cv <- function(k) {
   dat <- my_penguins %>%
-    select(body_mass_g, bill_length_mm,
+    dplyr:::select(body_mass_g, bill_length_mm,
            bill_depth_mm, flipper_length_mm)
   dat <- na.omit(dat)
 
@@ -29,10 +29,10 @@ my_rf_cv <- function(k) {
   # iterate through k-folds
   for (i in 1:k){
     # split the data
-    data_train <- dat %>% filter(split != i)
-    data_test <- dat %>% filter(split == i)
+    data_train <- dat %>% dplyr::filter(split != i)
+    data_test <- dat %>% dplyr::filter(split == i)
     # prediction model using random forest
-    result <- randomForest(body_mass_g ~ bill_length_mm +
+    result <- randomForest::randomForest(body_mass_g ~ bill_length_mm +
                              bill_depth_mm + flipper_length_mm,
                            data = data_train,
                            ntree = 100)
