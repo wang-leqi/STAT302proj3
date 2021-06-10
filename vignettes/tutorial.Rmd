@@ -20,45 +20,57 @@ knitr::opts_chunk$set(
 This package includes 4 functions: `my_t.test`, `my_lm`, `my_knn_cv` and `my_rf_cv`, which are either for prediction or inference. First, we install the package from github and load the package using 'library()'.
 
 ```{r, eval = FALSE}
-devtools::install_github("wang-leqi/STAT302proj3", build_vignette = TRUE, build_opts = c())
+devtools::install_github("wang-leqi/STAT302proj3")
 ```
 ```{r, message = F}
 library(STAT302proj3)
 ```
 
 # Tutorial for my_t.test
+In this section, we set up a tutorial for my_t.test, we use the `lifeExp` data from `my_gapminder` to test a null hypothesis test. 
+
 ```{r}
-#A tutorial for my_t.test
 #hypothesis: mean of the life Expectancy from my_gapminder equals to 60(p-value cut-off of α=0.05)
 #alternative hypothesis: mean of the life Expectancy data from my_gapminder does not equal to 60
-my_t_test(x=(my_gapminder$lifeExp),alternative="two sided",mu = 60)
+val1 <- my_t_test(x=(my_gapminder$lifeExp),alternative="two sided",mu = 60)$p_value
 
 #hypothesis: mean of the life Expectancy data from my_gapminder equals to 60(p-value cut-off of α=0.05)
 #alternative hypothesis: mean of the life Expectancy data from my_gapminder is larger than 60
-my_t_test(x=(my_gapminder$lifeExp),alternative="greater",mu = 60)
+val2 <- my_t_test(x=(my_gapminder$lifeExp),alternative="greater",mu = 60)$p_value
 
 #hypothesis: mean of the life Expectancy from my_gapminder equals to 60(p-value cut-off of α=0.05)
 #alternative hypothesis: mean of the life Expectancy from my_gapminder is smaller than 60
-my_t_test(x=(my_gapminder$lifeExp),alternative="less",mu = 60)
+val3 <- my_t_test(x=(my_gapminder$lifeExp),alternative="less",mu = 60)$p_value
 
 ```
-For the first t-test, we observe P = 0.09322877. Thus we have sufficient evidence to reject the null hypothesis and conclude that the true mean life expectancy is not equal to 60.
+For the first t-test, we observe P = `r val1`, which is greater than cut off value. Thus we don't have sufficient evidence to reject the null hypothesis and we can't conclude that the mean life expectancy is equal to 60.
 
-For the third t-test, we observe P = 0.04661438. Thus we  have sufficient evidence to reject the null hypothesis and conclude that the true mean life expectancy is greater than 60.
+For the third t-test, we observe P = `r val2`. Thus we have sufficient evidence to reject the null hypothesis and conclude that the true mean life expectancy is greater than 60.
 
-For the second t-test, we observe P = 0.9533856 Thus  we do not have sufficient evidence to reject the null hypothesis. Therefore, we cannot conclude that the real mean life expectancy is smaller than 60.
+For the second t-test, we observe P = `r val3` Thus  we do not have sufficient evidence to reject the null hypothesis. Therefore, we cannot conclude that the real mean life expectancy is smaller than 60.
 
 # Tutorial for my_lm
+In this section, we generate a regression using life Expectancy as our response variable and gdp Percaption and continent as explanatory variables.
 ```{r}
-#tutorial for my_lm
-#Generate a regression using life Expectancy as your response variable and gdp Percaption and continent as explanatory variables
-lm_fit <- my_lm(lifeExp ~gdpPercap + continent, data = my_gapminder)
+result <- my_lm(lifeExp ~gdpPercap + continent, data = my_gapminder)
+result_p <- result$`Pr(>|t|)`
+result_gdp <- result_p[2]
+result
+```
+we see a positive coefficients for numeric variable gdpPercap, and therefore we say higher values of GDP may lead to higher life expectancy at birth. For variable continent, we find that different continents have different coefficients, so we expect a correlation between continent and life expectancy at birth.
 
+```{r}
+result_p
+```
+As we can see, the p-value for gdpPercap is `r result_gdp` and is significantly smaller than the cut off value. Therefore we can reject the null hypothesis that there is no correlation between `gdpPercap` and `lifeExp`. Below, we plot out the result based on a linear regression:
+
+```{r}
+mu <- result_p
 #Write the hypothesis test associated with the gdpPercap coefficient.
-my_t_test(x= my_gapminder$gdpPercap, alternative="less", mu = 4.452704e-04)
+my_t_test(x= my_gapminder$gdpPercap, alternative="less", mu)
 
 #predict the fitted values 
-my_estimate <- lm_fit$Estimate
+my_estimate <- result$Estimate
 matrix <- model.matrix(lifeExp ~gdpPercap + continent, data = my_gapminder)
 y_hat <- matrix %*% as.matrix(my_estimate)
 df <- data.frame("actual" = my_gapminder$lifeExp, "fitted" = y_hat, "continent" = my_gapminder$continent)
@@ -79,12 +91,7 @@ fitting_plot <- ggplot(df, aes(x=x, y=y, color = continent)) +
 fitting_plot
 ```
 
-1. interpret the gdpPercap coefficient: 
-The coefficient of gdpPercap is 4.452704e-04 which means that for every one unit of increase in gdp Per capital, life Expectancy will increase 4.452704e-04.
-2. interpret the results:
-the gdpPercap hypothesis test using a p-value cut-off of a = 0.05.
-p-value is 3.017639e-161 is significantly smaller than 0.05.Thus, we have enough evidence to reject that the null hypothesis that the mu of gdpPerCap is 4.452704e-04.
-3.Interpret the Actual vs. Fitted values plot:
+Interpret the Actual vs. Fitted values plot:
 The model is not optimal. As the x-axis represents the actual lines, and the y axis represents the fitted value. The slope of the line would represent the percent of precision of the fitted value to the actual values. Here, the slope of the graph does not appear to be straight, which means that this model fit is not optimal.
 
 # Tutorial for my_knn_cv
@@ -99,7 +106,47 @@ for(i in 1:10) {
 }
 colnames(my_table) <- c("k_nn = 1", "k_nn = 2", "k_nn = 3", "k_nn = 4", "k_nn = 5", "k_nn = 6", "k_nn = 7", "k_nn = 8", "k_nn = 9", "k_nn = 10")
 rownames(my_table) <- c("cv_err", "training_err")
+my_table
 ```
 
 In the table, when k_nn = 1, there are both the smallest cv error and the training error, so k_nn = 1 is the best model when k_cv = 5. 
 Cross validation is a statistical method that used to check how accurately our model can predict the result.
+
+# Tutorial for my_rf_cv
+In this section, we predict body_mass_g using covariates bill_length_mm, bill_depth_mm, and flipper_length_mm using randomForest model. 
+
+```{r}
+#Calculate CV estimated MSE when k = 2, 5, and 10
+mat <- matrix(NA, nrow = 90, ncol = 2)
+for (k in c(2, 5, 10)){
+  for (i in 1:30) {
+    mat[k %/% 5 * 30 + i, 1] <- k
+    mat[k %/% 5 * 30 + i, 2] <- my_rf_cv(k)
+  }
+}
+colnames(mat) <- c("k", "mse")
+```
+
+Then we plot the result out with average CV estimate and standard deviation using boxplot across different k value.
+
+```{r}
+#Generate a boxplot of MSE for multiple values of k.
+data.frame(mat) %>%
+  ggplot(aes(group = k, y = mse)) +
+  geom_boxplot(aes(x = k, color = k)) +
+  xlab("k")
+
+```
+
+```{r}
+tab <- matrix(NA, nrow = 3, ncol = 2)
+rownames(tab) <- c("k = 2", "k = 5", "k = 10")
+colnames(tab) <- c("mean", "sd")
+tab[1, 1] <- mean(mat[1:30, 2])
+tab[1, 2] <- sd(mat[1:30, 2])
+tab[2, 1] <- mean(mat[31:60, 2])
+tab[2, 2] <- sd(mat[31:60, 2])
+tab[3, 1] <- mean(mat[61:90, 2])
+tab[3, 2] <- sd(mat[61:90, 2])
+tab
+```
