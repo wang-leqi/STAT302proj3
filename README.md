@@ -1,6 +1,7 @@
 # STAT302proj3
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/wang-leqi/STAT302proj3/workflows/R-CMD-check/badge.svg)](https://github.com/wang-leqi/STAT302proj3/actions)
+[![codecov](https://codecov.io/gh/wang-leqi/STAT302proj3/branch/master/graph/badge.svg?token=OONW5EA17Z)](https://codecov.io/gh/wang-leqi/STAT302proj3)
 <!-- badges: end -->
 
 The goal of STAT302proj3 is to showcase four functions we've been working on for statistical inference and prediction. 
